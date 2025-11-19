@@ -80,6 +80,8 @@ function handleToggleChange(enabled) {
   chrome.storage.local.set({ enabled }, () => {
     setSwitchUI(enabled);
     setStatusText(enabled ? 'Blocking is ON' : 'Blocking is OFF');
+    // Update the toolbar icon
+    updateToolbarIcon(enabled);
     // Notify all amazon tabs (content.js listens for enable/disable)
     notifyAllTabs(enabled);
     // Show the refresh UI so the user can make changes take effect
@@ -87,6 +89,20 @@ function handleToggleChange(enabled) {
     // update count (content script may have updated or will update after reload)
     setTimeout(fetchBlockedCountFromActiveTab, 300);
   });
+}
+
+// Update toolbar icon based on enabled state
+function updateToolbarIcon(enabled) {
+  const iconSet = enabled ? {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  } : {
+    "16": "icons/icon16-disabled.png",
+    "48": "icons/icon48-disabled.png",
+    "128": "icons/icon128-disabled.png"
+  };
+  chrome.action.setIcon({ path: iconSet });
 }
 
 // Click handler for the custom switch UI
