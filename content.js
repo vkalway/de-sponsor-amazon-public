@@ -7,6 +7,7 @@
 const ENABLED_DEFAULT = true;
 let enabled = true;
 let observer = null;
+let blockedCount = 0;
 
 // Main results container selector(s)
 function getMainResultsContainer() {
@@ -190,7 +191,7 @@ function startObserver(){
     for (const m of mutations){
       if (m.addedNodes && m.addedNodes.length) {
         for (const n of Array.from(m.addedNodes)){
-          try { scanSubtree(n); } catch(e){}
+          try { const r = scanSubtree(n); if (r) blockedCount += r; } catch(e){}
         }
       }
     }
@@ -206,10 +207,11 @@ function stopObserver(){
 
 // storage/init/messages
 function init(){
+  blockedCount = 0; // Reset count on init (new page or reload)
   chrome.storage.local.get({enabled: ENABLED_DEFAULT}, (items) => {
     enabled = !!items.enabled;
     if (enabled) {
-      try { scanSubtree(document); } catch(e){}
+      try { const r = scanSubtree(document); if (r) blockedCount += r; } catch(e){}
       startObserver();
     } else {
       stopObserver();
@@ -217,20 +219,34 @@ function init(){
   });
 }
 
-chrome.runtime.onMessage.addListener((msg, sender) => {
-  if (!msg || !msg.action) return;
+// Consolidated message listener for all actions
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  if (!msg || !msg.action) return false;
+  
   if (msg.action === 'enable') {
     chrome.storage.local.set({enabled: true});
     enabled = true;
-    try { scanSubtree(document); } catch(e){}
+    try { const r = scanSubtree(document); if (r) blockedCount += r; } catch(e){}
     startObserver();
+    return false;
   } else if (msg.action === 'disable') {
     chrome.storage.local.set({enabled: false});
     enabled = false;
+    blockedCount = 0; // Reset count when disabling
     stopObserver();
     // reload to restore original page reliably
     try { window.location.reload(); } catch(e){}
+    return false;
+  } else if (msg.action === 'get_blocked_count') {
+    try {
+      sendResponse({ count: blockedCount });
+    } catch (e) {
+      sendResponse({ count: 0 });
+    }
+    return true; // Indicate async response handling
   }
+  
+  return false;
 });
 
 // run on load
