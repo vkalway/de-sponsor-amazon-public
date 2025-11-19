@@ -1,0 +1,237 @@
+// content.js (targeted removal — only remove sponsored items inside main search results)
+// Tightened rules: only remove if the candidate is inside the main results container
+// AND the candidate (or its subtree) actually contains an explicit "Sponsored" label.
+// Based on user's snippets (s-searchgrid-carousel / s-widget-sponsored-label-text / puis-sponsored-label-text).
+// See provided snippets for context. :contentReference[oaicite:2]{index=2} :contentReference[oaicite:3]{index=3}
+
+const ENABLED_DEFAULT = true;
+let enabled = true;
+let observer = null;
+
+// Main results container selector(s)
+function getMainResultsContainer() {
+  return document.querySelector('div.s-main-slot') || document.querySelector('#search') || document.body;
+}
+
+// small utility
+function textOf(el){
+  try { return (el.innerText || el.textContent || '').trim(); } catch(e){ return ''; }
+}
+
+// Known explicit label selectors (from snippets)
+const EXPLICIT_LABEL_SELECTORS = [
+  'a.s-widget-sponsored-label-text',
+  '.s-widget-sponsored-label-text',
+  '.puis-sponsored-label-text',
+  '.puis-label-popover',
+  '.puis-label-popover-default',
+  'span._ZGFyZ_ad-feedback-text-desktop_q3xp_',  // top-ad ad-feedback (only remove if inside main results)
+  'a[aria-label*="Sponsored"]',
+  'a[role="button"].s-widget-sponsored-label-text'
+];
+
+// Candidate container selectors (product card / result item)
+const RESULT_CONTAINER_SELECTORS = [
+  '[data-component-type="s-search-result"]',
+  'div.s-result-item',
+  'div[data-asin]',
+  'article',
+  'div.s-card-container'
+];
+
+// Candidate widget/carousel selectors (we will NOT remove them blindly)
+const WIDGET_CANDIDATE_SELECTORS = [
+  'div.s-widget-container',
+  'div.s-searchgrid-carousel',
+  'div.a-carousel-container',
+  'div[data-component-type="s-searchgrid-carousel"]',
+  'span[data-component-type="aspa-asin-ajax-lazy-loader"]',
+];
+
+// climb up from a label node and prefer: product container -> widget container -> fallback
+function locateCandidateContainers(startNode){
+  let productContainer = null;
+  let widgetContainer = null;
+  let cur = startNode;
+  for (let i = 0; i < 14 && cur; i++, cur = cur.parentElement){
+    try {
+      if (!productContainer) {
+        for (const s of RESULT_CONTAINER_SELECTORS) {
+          if (cur.matches && cur.matches(s)) {
+            productContainer = cur;
+            // don't break yet — prefer the nearest product container but keep checking for widget higher up
+            break;
+          }
+        }
+      }
+      if (!widgetContainer) {
+        for (const s of WIDGET_CANDIDATE_SELECTORS) {
+          if (cur.matches && cur.matches(s)) {
+            widgetContainer = cur;
+            break;
+          }
+        }
+      }
+    } catch(e){}
+  }
+  return {productContainer, widgetContainer};
+}
+
+// safe remove
+function removeSafe(node){
+  if (!node) return false;
+  try {
+    node.remove();
+    return true;
+  } catch(e){
+    try { node.style.display = 'none'; return true; } catch(e2) { return false; }
+  }
+}
+
+// check if node is inside the main results container
+function isInsideMainResults(node){
+  const main = getMainResultsContainer();
+  if (!main) return false;
+  return main.contains(node);
+}
+
+// does this element (or its subtree) contain explicit sponsored indicator?
+function containsSponsoredLabel(el){
+  if (!el) return false;
+  // 1) explicit selectors
+  for (const sel of EXPLICIT_LABEL_SELECTORS) {
+    try {
+      if (el.querySelector && el.querySelector(sel)) return true;
+    } catch(e){}
+  }
+  // 2) visible text 'Sponsored' somewhere in subtree (limit depth scan)
+  try {
+    const walker = document.createTreeWalker(el, NodeFilter.SHOW_ELEMENT);
+    let n;
+    let depth = 0;
+    while ((n = walker.nextNode()) && depth < 1000) {
+      depth++;
+      // ignore nodes with many children (we want small label spans)
+      if (n.childElementCount > 6) continue;
+      const t = textOf(n);
+      if (/\bSponsored\b/i.test(t)) return true;
+    }
+  } catch(e){}
+  return false;
+}
+
+// scan a subtree (or whole doc) but only act on nodes inside main results
+function scanSubtree(root = document){
+  if (!enabled) return 0;
+  let removed = 0;
+  const main = getMainResultsContainer();
+  if (!main) return 0;
+
+  // 1) Explicit label elements inside main results
+  for (const sel of EXPLICIT_LABEL_SELECTORS) {
+    let list = [];
+    try { list = Array.from((root.querySelectorAll && root.querySelectorAll(sel)) || []); } catch(e){ list = []; }
+    for (const labelEl of list) {
+      if (!isInsideMainResults(labelEl)) continue;            // only within search results
+      // locate candidate containers
+      const {productContainer, widgetContainer} = locateCandidateContainers(labelEl);
+
+      // If a product-level container exists, remove it (single search result)
+      if (productContainer && isInsideMainResults(productContainer)) {
+        if (removeSafe(productContainer)) removed++;
+        continue;
+      }
+
+      // If a widget-level container exists, remove it only if the widget contains a sponsored label (double-check)
+      if (widgetContainer && isInsideMainResults(widgetContainer)) {
+        if (containsSponsoredLabel(widgetContainer)) {
+          if (removeSafe(widgetContainer)) removed++;
+        }
+      }
+    }
+  }
+
+  // 2) Fallback: find any small element with visible text 'Sponsored' inside main results
+  try {
+    const walker = document.createTreeWalker(main, NodeFilter.SHOW_ELEMENT);
+    let node;
+    while (node = walker.nextNode()){
+      // skip big nodes
+      if (node.childElementCount > 6) continue;
+      const t = textOf(node);
+      if (/\bSponsored\b/i.test(t)) {
+        // ensure the node is inside main results (it is, because walker is on main)
+        const {productContainer, widgetContainer} = locateCandidateContainers(node);
+        if (productContainer && isInsideMainResults(productContainer)) {
+          if (removeSafe(productContainer)) removed++;
+          continue;
+        }
+        if (widgetContainer && isInsideMainResults(widgetContainer) && containsSponsoredLabel(widgetContainer)) {
+          if (removeSafe(widgetContainer)) removed++;
+          continue;
+        }
+        // as final fallback, remove nearest result-like div if inside main results
+        let fallback = node.closest('div.s-result-item') || node.closest('[data-component-type="s-search-result"]') || node.closest('div[data-asin]');
+        if (fallback && isInsideMainResults(fallback)) {
+          if (removeSafe(fallback)) removed++;
+        }
+      }
+    }
+  } catch(e){}
+
+  return removed;
+}
+
+// observer: only watch main results region
+function startObserver(){
+  if (observer) return;
+  const target = getMainResultsContainer() || document.body;
+  observer = new MutationObserver((mutations)=>{
+    for (const m of mutations){
+      if (m.addedNodes && m.addedNodes.length) {
+        for (const n of Array.from(m.addedNodes)){
+          try { scanSubtree(n); } catch(e){}
+        }
+      }
+    }
+  });
+  observer.observe(target, { childList: true, subtree: true });
+}
+
+function stopObserver(){
+  if (!observer) return;
+  observer.disconnect();
+  observer = null;
+}
+
+// storage/init/messages
+function init(){
+  chrome.storage.local.get({enabled: ENABLED_DEFAULT}, (items) => {
+    enabled = !!items.enabled;
+    if (enabled) {
+      try { scanSubtree(document); } catch(e){}
+      startObserver();
+    } else {
+      stopObserver();
+    }
+  });
+}
+
+chrome.runtime.onMessage.addListener((msg, sender) => {
+  if (!msg || !msg.action) return;
+  if (msg.action === 'enable') {
+    chrome.storage.local.set({enabled: true});
+    enabled = true;
+    try { scanSubtree(document); } catch(e){}
+    startObserver();
+  } else if (msg.action === 'disable') {
+    chrome.storage.local.set({enabled: false});
+    enabled = false;
+    stopObserver();
+    // reload to restore original page reliably
+    try { window.location.reload(); } catch(e){}
+  }
+});
+
+// run on load
+init();

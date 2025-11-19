@@ -1,0 +1,16 @@
+# Mac/Windows system files
+.DS_Store
+Thumbs.db
+
+# Node modules (if you use npm/yarn)
+node_modules/
+
+# Build output (if you build your extension)
+dist/
+build/
+
+# SENSITIVE KEYS (Never upload these!)
+*.pem
+*.key
+.env
+secret.js
