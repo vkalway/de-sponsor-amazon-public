@@ -6,6 +6,8 @@ const refreshBtn = document.getElementById('refreshBtn');
 const switchEl = document.getElementById('switch');
 const blockedCountEl = document.getElementById('blockedCount');
 
+let isAmazonSite = false;
+
 function setStatusText(text) {
   status.textContent = text;
 }
@@ -32,14 +34,44 @@ function hideRefreshBox() {
   refreshBox.style.display = 'none';
 }
 
+// Check if a URL is an Amazon domain
+function isAmazonURL(url) {
+  if (!url) return false;
+  try {
+    const hostname = new URL(url).hostname.toLowerCase();
+    return hostname.includes('amazon.');
+  } catch(e) {
+    return false;
+  }
+}
+
 // Load current stored preference and update UI
-chrome.storage.local.get({ enabled: true }, (items) => {
-  const enabled = !!items.enabled;
-  setSwitchUI(enabled);
-  setStatusText(enabled ? 'Blocking is ON' : 'Blocking is OFF');
-  hideRefreshBox();
-  // Query the active tab for the number of ads blocked on this page
-  fetchBlockedCountFromActiveTab();
+chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+  const currentTab = tabs && tabs[0];
+  isAmazonSite = currentTab ? isAmazonURL(currentTab.url) : false;
+  
+  chrome.storage.local.get({ enabled: true }, (items) => {
+    const storedEnabled = !!items.enabled;
+    
+    // Show the stored state if on Amazon, otherwise show as disabled
+    const displayEnabled = isAmazonSite ? storedEnabled : false;
+    
+    setSwitchUI(displayEnabled);
+    
+    if (!isAmazonSite) {
+      setStatusText('Only works on Amazon');
+      switchEl.style.opacity = '0.5';
+      switchEl.style.cursor = 'not-allowed';
+    } else {
+      setStatusText(storedEnabled ? 'Blocking is ON' : 'Blocking is OFF');
+      switchEl.style.opacity = '1';
+      switchEl.style.cursor = 'pointer';
+    }
+    
+    hideRefreshBox();
+    // Query the active tab for the number of ads blocked on this page
+    fetchBlockedCountFromActiveTab();
+  });
 });
 
 // Handle toggle change
@@ -61,6 +93,12 @@ function handleToggleChange(enabled) {
 switchEl.addEventListener('click', (e) => {
   e.preventDefault();
   e.stopPropagation();
+  
+  // Prevent toggle on non-Amazon sites
+  if (!isAmazonSite) {
+    return;
+  }
+  
   const newVal = !toggleInput.checked;
   toggleInput.checked = newVal;
   handleToggleChange(newVal);
