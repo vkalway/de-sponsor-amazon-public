@@ -4,6 +4,7 @@ const status = document.getElementById('status');
 const refreshBox = document.getElementById('refreshBox');
 const refreshBtn = document.getElementById('refreshBtn');
 const switchEl = document.getElementById('switch');
+const blockedCountEl = document.getElementById('blockedCount');
 
 function setStatusText(text) {
   status.textContent = text;
@@ -37,6 +38,8 @@ chrome.storage.local.get({ enabled: true }, (items) => {
   setSwitchUI(enabled);
   setStatusText(enabled ? 'Blocking is ON' : 'Blocking is OFF');
   hideRefreshBox();
+  // Query the active tab for the number of ads blocked on this page
+  fetchBlockedCountFromActiveTab();
 });
 
 // Handle toggle change
@@ -49,6 +52,8 @@ function handleToggleChange(enabled) {
     notifyAllTabs(enabled);
     // Show the refresh UI so the user can make changes take effect
     showRefreshBox();
+    // update count (content script may have updated or will update after reload)
+    setTimeout(fetchBlockedCountFromActiveTab, 300);
   });
 }
 
@@ -72,6 +77,32 @@ function notifyAllTabs(enabled) {
         }
       });
     }
+  });
+}
+
+// Update blocked count UI
+function setBlockedCount(count) {
+  if (!blockedCountEl) return;
+  blockedCountEl.textContent = String(Number(count) || 0);
+}
+
+// Ask the active tab's content script for the blocked count on that page
+function fetchBlockedCountFromActiveTab() {
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    if (!tabs || !tabs.length) return setBlockedCount(0);
+    const tabId = tabs[0].id;
+    chrome.tabs.sendMessage(tabId, { action: 'get_blocked_count' }, (resp) => {
+      if (chrome.runtime.lastError) {
+        // No content script or other error — default to 0
+        setBlockedCount(0);
+        return;
+      }
+      if (resp && typeof resp.count === 'number') {
+        setBlockedCount(resp.count);
+      } else {
+        setBlockedCount(0);
+      }
+    });
   });
 }
 

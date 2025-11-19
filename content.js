@@ -7,6 +7,7 @@
 const ENABLED_DEFAULT = true;
 let enabled = true;
 let observer = null;
+let blockedCount = 0;
 
 // Main results container selector(s)
 function getMainResultsContainer() {
@@ -190,7 +191,7 @@ function startObserver(){
     for (const m of mutations){
       if (m.addedNodes && m.addedNodes.length) {
         for (const n of Array.from(m.addedNodes)){
-          try { scanSubtree(n); } catch(e){}
+          try { const r = scanSubtree(n); if (r) blockedCount += r; } catch(e){}
         }
       }
     }
@@ -209,7 +210,7 @@ function init(){
   chrome.storage.local.get({enabled: ENABLED_DEFAULT}, (items) => {
     enabled = !!items.enabled;
     if (enabled) {
-      try { scanSubtree(document); } catch(e){}
+      try { const r = scanSubtree(document); if (r) blockedCount += r; } catch(e){}
       startObserver();
     } else {
       stopObserver();
@@ -222,7 +223,7 @@ chrome.runtime.onMessage.addListener((msg, sender) => {
   if (msg.action === 'enable') {
     chrome.storage.local.set({enabled: true});
     enabled = true;
-    try { scanSubtree(document); } catch(e){}
+    try { const r = scanSubtree(document); if (r) blockedCount += r; } catch(e){}
     startObserver();
   } else if (msg.action === 'disable') {
     chrome.storage.local.set({enabled: false});
@@ -230,6 +231,17 @@ chrome.runtime.onMessage.addListener((msg, sender) => {
     stopObserver();
     // reload to restore original page reliably
     try { window.location.reload(); } catch(e){}
+  }
+});
+
+// Respond to popup queries for the current blocked count on this page
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  if (msg && msg.action === 'get_blocked_count') {
+    try {
+      sendResponse({ count: blockedCount });
+    } catch (e) {
+      sendResponse({ count: 0 });
+    }
   }
 });
 
