@@ -183,6 +183,17 @@ function scanSubtree(root = document){
   return removed;
 }
 
+// Update badge with current blocked count
+function updateBadge() {
+  try {
+    chrome.runtime.sendMessage({ action: 'update_badge', count: blockedCount }, () => {
+      if (chrome.runtime.lastError) {
+        // Silent error handling
+      }
+    });
+  } catch(e) {}
+}
+
 // observer: only watch main results region
 function startObserver(){
   if (observer) return;
@@ -191,7 +202,13 @@ function startObserver(){
     for (const m of mutations){
       if (m.addedNodes && m.addedNodes.length) {
         for (const n of Array.from(m.addedNodes)){
-          try { const r = scanSubtree(n); if (r) blockedCount += r; } catch(e){}
+          try { 
+            const r = scanSubtree(n); 
+            if (r) {
+              blockedCount += r;
+              updateBadge();
+            }
+          } catch(e){}
         }
       }
     }
@@ -211,10 +228,18 @@ function init(){
   chrome.storage.local.get({enabled: ENABLED_DEFAULT}, (items) => {
     enabled = !!items.enabled;
     if (enabled) {
-      try { const r = scanSubtree(document); if (r) blockedCount += r; } catch(e){}
+      try { 
+        const r = scanSubtree(document); 
+        if (r) {
+          blockedCount += r;
+          updateBadge();
+        }
+      } catch(e){}
       startObserver();
     } else {
       stopObserver();
+      blockedCount = 0;
+      updateBadge();
     }
   });
 }
@@ -226,7 +251,14 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.action === 'enable') {
     chrome.storage.local.set({enabled: true});
     enabled = true;
-    try { const r = scanSubtree(document); if (r) blockedCount += r; } catch(e){}
+    blockedCount = 0;
+    try { 
+      const r = scanSubtree(document); 
+      if (r) {
+        blockedCount += r;
+        updateBadge();
+      }
+    } catch(e){}
     startObserver();
     return false;
   } else if (msg.action === 'disable') {
@@ -234,6 +266,8 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     enabled = false;
     blockedCount = 0; // Reset count when disabling
     stopObserver();
+    blockedCount = 0;
+    updateBadge();
     // reload to restore original page reliably
     try { window.location.reload(); } catch(e){}
     return false;
