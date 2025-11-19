@@ -207,7 +207,7 @@ function stopObserver(){
 
 // storage/init/messages
 function init(){
-  blockedCount = 0;
+  blockedCount = 0; // Reset count on init (new page or reload)
   chrome.storage.local.get({enabled: ENABLED_DEFAULT}, (items) => {
     enabled = !!items.enabled;
     if (enabled) {
@@ -219,32 +219,34 @@ function init(){
   });
 }
 
-chrome.runtime.onMessage.addListener((msg, sender) => {
-  if (!msg || !msg.action) return;
+// Consolidated message listener for all actions
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  if (!msg || !msg.action) return false;
+  
   if (msg.action === 'enable') {
     chrome.storage.local.set({enabled: true});
     enabled = true;
     try { const r = scanSubtree(document); if (r) blockedCount += r; } catch(e){}
     startObserver();
+    return false;
   } else if (msg.action === 'disable') {
     chrome.storage.local.set({enabled: false});
     enabled = false;
-    blockedCount = 0;
+    blockedCount = 0; // Reset count when disabling
     stopObserver();
     // reload to restore original page reliably
     try { window.location.reload(); } catch(e){}
-  }
-});
-
-// Respond to popup queries for the current blocked count on this page
-chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-  if (msg && msg.action === 'get_blocked_count') {
+    return false;
+  } else if (msg.action === 'get_blocked_count') {
     try {
       sendResponse({ count: blockedCount });
     } catch (e) {
       sendResponse({ count: 0 });
     }
+    return true; // Indicate async response handling
   }
+  
+  return false;
 });
 
 // run on load
