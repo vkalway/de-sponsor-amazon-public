@@ -207,6 +207,7 @@ function stopObserver(){
 
 // storage/init/messages
 function init(){
+  blockedCount = 0;
   chrome.storage.local.get({enabled: ENABLED_DEFAULT}, (items) => {
     enabled = !!items.enabled;
     if (enabled) {
@@ -228,6 +229,7 @@ chrome.runtime.onMessage.addListener((msg, sender) => {
   } else if (msg.action === 'disable') {
     chrome.storage.local.set({enabled: false});
     enabled = false;
+    blockedCount = 0;
     stopObserver();
     // reload to restore original page reliably
     try { window.location.reload(); } catch(e){}
