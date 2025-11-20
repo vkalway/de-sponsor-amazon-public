@@ -55,14 +55,14 @@ function locateCandidateContainers(startNode){
   let widgetContainer = null;
   let cur = startNode;
   for (let i = 0; i < 14 && cur; i++, cur = cur.parentElement){
-    try {
-      if (!productContainer) {
-        for (const s of RESULT_CONTAINER_SELECTORS) {
-          if (cur.matches && cur.matches(s)) {
-            productContainer = cur;
-            // don't break yet — prefer the nearest product container but keep checking for widget higher up
-            break;
-          }
+   try {
+      // Always check for product container to find the outermost one (e.g. s-result-item)
+      // This prevents leaving empty slots by removing inner containers (like s-card-container)
+      // while leaving the grid cell (s-result-item) intact.
+      for (const s of RESULT_CONTAINER_SELECTORS) {
+        if (cur.matches && cur.matches(s)) {
+          productContainer = cur;
+          break;
         }
       }
       if (!widgetContainer) {
