@@ -49,13 +49,19 @@ const WIDGET_CANDIDATE_SELECTORS = [
   'span[data-component-type="aspa-asin-ajax-lazy-loader"]',
 ];
 
-// climb up from a label node and prefer: product container -> widget container -> fallback
+// climb up from a label node and prefer: carousel item -> product container -> widget container -> fallback
 function locateCandidateContainers(startNode){
   let productContainer = null;
   let widgetContainer = null;
+  let carouselItem = null;
   let cur = startNode;
   for (let i = 0; i < 14 && cur; i++, cur = cur.parentElement){
    try {
+      // Check for carousel item first (li.a-carousel-card)
+      // This is crucial: if inside a carousel, we must remove the <li> to avoid empty slots
+      if (!carouselItem && cur.matches && cur.matches('li.a-carousel-card')) {
+        carouselItem = cur;
+      }
       // Always check for product container to find the outermost one (e.g. s-result-item)
       // This prevents leaving empty slots by removing inner containers (like s-card-container)
       // while leaving the grid cell (s-result-item) intact.
@@ -75,7 +81,7 @@ function locateCandidateContainers(startNode){
       }
     } catch(e){}
   }
-  return {productContainer, widgetContainer};
+  return {productContainer, widgetContainer, carouselItem};
 }
 
 // safe remove
@@ -87,6 +93,26 @@ function removeSafe(node){
   } catch(e){
     try { node.style.display = 'none'; return true; } catch(e2) { return false; }
   }
+}
+
+// Find the carousel container that contains this node
+function findCarouselContainer(node) {
+  if (!node) return null;
+  let current = node;
+  for (let i = 0; i < 15 && current; i++, current = current.parentElement) {
+    try {
+      if (current.matches && (
+        current.matches('div.s-searchgrid-carousel') ||
+        current.matches('div.a-carousel-container') ||
+        current.matches('[data-component-type="s-searchgrid-carousel"]') ||
+        current.matches('.a-carousel-viewport') ||
+        current.matches('[cel_widget_id*="carousel"]')
+      )) {
+        return current;
+      }
+    } catch(e) {}
+  }
+  return null;
 }
 
 // check if node is inside the main results container
@@ -135,18 +161,30 @@ function scanSubtree(root = document){
     for (const labelEl of list) {
       if (!isInsideMainResults(labelEl)) continue;            // only within search results
       // locate candidate containers
-      const {productContainer, widgetContainer} = locateCandidateContainers(labelEl);
+      const {productContainer, widgetContainer, carouselItem} = locateCandidateContainers(labelEl);
+
+      // If inside a carousel, remove the carousel item (<li>) to prevent empty slots
+      if (carouselItem && isInsideMainResults(carouselItem)) {
+        if (removeSafe(carouselItem)) {
+          removed++;
+        }
+        continue;
+      }
 
       // If a product-level container exists, remove it (single search result)
       if (productContainer && isInsideMainResults(productContainer)) {
-        if (removeSafe(productContainer)) removed++;
+        if (removeSafe(productContainer)) {
+          removed++;
+        }
         continue;
       }
 
       // If a widget-level container exists, remove it only if the widget contains a sponsored label (double-check)
       if (widgetContainer && isInsideMainResults(widgetContainer)) {
         if (containsSponsoredLabel(widgetContainer)) {
-          if (removeSafe(widgetContainer)) removed++;
+          if (removeSafe(widgetContainer)) {
+            removed++;
+          }
         }
       }
     }
@@ -162,19 +200,34 @@ function scanSubtree(root = document){
       const t = textOf(node);
       if (/\bSponsored\b/i.test(t)) {
         // ensure the node is inside main results (it is, because walker is on main)
-        const {productContainer, widgetContainer} = locateCandidateContainers(node);
+        const {productContainer, widgetContainer, carouselItem} = locateCandidateContainers(node);
+        
+        // Prioritize carousel item removal to prevent empty slots
+        if (carouselItem && isInsideMainResults(carouselItem)) {
+          if (removeSafe(carouselItem)) {
+            removed++;
+          }
+          continue;
+        }
+        
         if (productContainer && isInsideMainResults(productContainer)) {
-          if (removeSafe(productContainer)) removed++;
+          if (removeSafe(productContainer)) {
+            removed++;
+          }
           continue;
         }
         if (widgetContainer && isInsideMainResults(widgetContainer) && containsSponsoredLabel(widgetContainer)) {
-          if (removeSafe(widgetContainer)) removed++;
+          if (removeSafe(widgetContainer)) {
+            removed++;
+          }
           continue;
         }
         // as final fallback, remove nearest result-like div if inside main results
-        let fallback = node.closest('div.s-result-item') || node.closest('[data-component-type="s-search-result"]') || node.closest('div[data-asin]');
+        let fallback = node.closest('li.a-carousel-card') || node.closest('div.s-result-item') || node.closest('[data-component-type="s-search-result"]') || node.closest('div[data-asin]');
         if (fallback && isInsideMainResults(fallback)) {
-          if (removeSafe(fallback)) removed++;
+          if (removeSafe(fallback)) {
+            removed++;
+          }
         }
       }
     }
