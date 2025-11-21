@@ -7,8 +7,6 @@ chrome.runtime.onInstalled.addListener(() => {
     } else {
       updateAllTabIcons(res.enabled);
     }
-    // Set initial icon based on state
-    updateIcon(res.enabled !== false);
   });
 });
 
