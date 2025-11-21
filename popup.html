@@ -149,9 +149,19 @@
 
   <div id="status" class="status">Loading…</div>
 
-  <div id="blockedCountBox" style="margin-top:12px; text-align:center;">
-    <div id="blockedCount" style="font-size:28px; font-weight:700; color:#222;">0</div>
-    <div id="blockedLabel" style="font-size:12px; color:var(--muted);">Ads Blocked on This Page</div>
+  <div id="blockedCountBox" style="margin-top:16px; padding:14px; border:1px solid var(--border); border-radius:var(--radius); background:var(--box-bg);">
+    <div style="font-weight:600; font-size:12px; margin-bottom:12px; text-transform:uppercase; letter-spacing:0.5px; color:var(--muted);">Number of items blocked</div>
+    <div style="display:flex; justify-content:space-between; align-items:center; gap:16px;">
+      <div style="flex:1; text-align:center;">
+        <div style="font-size:11px; color:var(--muted); margin-bottom:4px;">on this page</div>
+        <div id="blockedCount" style="font-size:32px; font-weight:700; color:#222;">0</div>
+      </div>
+      <div style="width:1px; height:40px; background:var(--border);"></div>
+      <div style="flex:1; text-align:center;">
+        <div style="font-size:11px; color:var(--muted); margin-bottom:4px;">in total</div>
+        <div id="totalBlockedCount" style="font-size:32px; font-weight:700; color:#222;">0</div>
+      </div>
+    </div>
   </div>
 
   <div class="box" id="refreshBox" style="display:none;">

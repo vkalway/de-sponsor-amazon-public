@@ -5,6 +5,7 @@ const refreshBox = document.getElementById('refreshBox');
 const refreshBtn = document.getElementById('refreshBtn');
 const switchEl = document.getElementById('switch');
 const blockedCountEl = document.getElementById('blockedCount');
+const totalBlockedCountEl = document.getElementById('totalBlockedCount');
 
 let isAmazonSite = false;
 
@@ -71,6 +72,8 @@ chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     hideRefreshBox();
     // Query the active tab for the number of ads blocked on this page
     fetchBlockedCountFromActiveTab();
+    // Fetch the total blocked count from storage
+    fetchTotalBlockedCount();
   });
 });
 
@@ -87,7 +90,10 @@ function handleToggleChange(enabled) {
     // Show the refresh UI so the user can make changes take effect
     showRefreshBox();
     // update count (content script may have updated or will update after reload)
-    setTimeout(fetchBlockedCountFromActiveTab, 300);
+    setTimeout(() => {
+      fetchBlockedCountFromActiveTab();
+      fetchTotalBlockedCount();
+    }, 300);
   });
 }
 
@@ -138,6 +144,19 @@ function notifyAllTabs(enabled) {
 function setBlockedCount(count) {
   if (!blockedCountEl) return;
   blockedCountEl.textContent = String(Number(count) || 0);
+}
+
+// Update total blocked count UI
+function setTotalBlockedCount(count) {
+  if (!totalBlockedCountEl) return;
+  totalBlockedCountEl.textContent = String(Number(count) || 0);
+}
+
+// Fetch the total blocked count from storage
+function fetchTotalBlockedCount() {
+  chrome.storage.local.get({ totalBlocked: 0 }, (items) => {
+    setTotalBlockedCount(items.totalBlocked || 0);
+  });
 }
 
 // Ask the active tab's content script for the blocked count on that page
