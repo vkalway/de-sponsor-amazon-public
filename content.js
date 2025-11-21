@@ -247,6 +247,17 @@ function updateBadge() {
   } catch(e) {}
 }
 
+// Increment total blocked count in storage
+function incrementTotalBlocked(count) {
+  if (count <= 0) return;
+  try {
+    chrome.storage.local.get({ totalBlocked: 0 }, (items) => {
+      const newTotal = (items.totalBlocked || 0) + count;
+      chrome.storage.local.set({ totalBlocked: newTotal });
+    });
+  } catch(e) {}
+}
+
 // observer: only watch main results region
 function startObserver(){
   if (observer) return;
@@ -259,6 +270,7 @@ function startObserver(){
             const r = scanSubtree(n); 
             if (r) {
               blockedCount += r;
+              incrementTotalBlocked(r);
               updateBadge();
             }
           } catch(e){}
@@ -285,6 +297,7 @@ function init(){
         const r = scanSubtree(document); 
         if (r) {
           blockedCount += r;
+          incrementTotalBlocked(r);
           updateBadge();
         }
       } catch(e){}
@@ -309,6 +322,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       const r = scanSubtree(document); 
       if (r) {
         blockedCount += r;
+        incrementTotalBlocked(r);
         updateBadge();
       }
     } catch(e){}
