@@ -8,6 +8,52 @@ const ENABLED_DEFAULT = true;
 let enabled = true;
 let observer = null;
 let blockedCount = 0;
+let styleElement = null;
+
+// CSS rules to hide sponsored content (matches hide-sponsored.css)
+const HIDE_SPONSORED_CSS = `
+div.s-main-slot [data-component-type="s-search-result"]:has(.s-widget-sponsored-label-text),
+div.s-main-slot [data-component-type="s-search-result"]:has(.puis-sponsored-label-text),
+div.s-main-slot [data-component-type="s-search-result"]:has(a[aria-label*="Sponsored"]),
+div.s-main-slot div.s-result-item:has(.s-widget-sponsored-label-text),
+div.s-main-slot div.s-result-item:has(.puis-sponsored-label-text),
+div.s-main-slot div.s-result-item:has(a[aria-label*="Sponsored"]),
+div.s-main-slot div[data-asin]:has(.s-widget-sponsored-label-text),
+div.s-main-slot div[data-asin]:has(.puis-sponsored-label-text),
+div.s-main-slot div[data-asin]:has(a[aria-label*="Sponsored"]),
+div.s-main-slot div.s-card-container:has(.s-widget-sponsored-label-text),
+div.s-main-slot div.s-card-container:has(.puis-sponsored-label-text),
+div.s-main-slot div.s-card-container:has(a[aria-label*="Sponsored"]),
+div.s-main-slot li.a-carousel-card:has(.s-widget-sponsored-label-text),
+div.s-main-slot li.a-carousel-card:has(.puis-sponsored-label-text),
+div.s-main-slot li.a-carousel-card:has(a[aria-label*="Sponsored"]),
+div.s-main-slot div.s-widget-container:has(.s-widget-sponsored-label-text),
+div.s-main-slot div.s-widget-container:has(.puis-sponsored-label-text),
+div.s-main-slot div.s-widget-container:has(a[aria-label*="Sponsored"]),
+div.s-main-slot div.s-searchgrid-carousel:has(.s-widget-sponsored-label-text),
+div.s-main-slot div.s-searchgrid-carousel:has(.puis-sponsored-label-text),
+div.s-main-slot div.s-searchgrid-carousel:has(a[aria-label*="Sponsored"]) {
+  display: none !important;
+  visibility: hidden !important;
+}
+`;
+
+// Inject or remove dynamic CSS based on enabled state
+function updateCSS(enable) {
+  if (enable) {
+    if (!styleElement) {
+      styleElement = document.createElement('style');
+      styleElement.id = 'amazon-ad-block-dynamic-css';
+      styleElement.textContent = HIDE_SPONSORED_CSS;
+      (document.head || document.documentElement).appendChild(styleElement);
+    }
+  } else {
+    if (styleElement) {
+      styleElement.remove();
+      styleElement = null;
+    }
+  }
+}
 
 // Main results container selector(s)
 function getMainResultsContainer() {
@@ -292,6 +338,7 @@ function init(){
   blockedCount = 0; // Reset count on init (new page or reload)
   chrome.storage.local.get({enabled: ENABLED_DEFAULT}, (items) => {
     enabled = !!items.enabled;
+    updateCSS(enabled); // Inject or remove CSS dynamically
     if (enabled) {
       try { 
         const r = scanSubtree(document); 
@@ -317,6 +364,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.action === 'enable') {
     chrome.storage.local.set({enabled: true});
     enabled = true;
+    updateCSS(true); // Inject CSS
     blockedCount = 0;
     try { 
       const r = scanSubtree(document); 
@@ -331,6 +379,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   } else if (msg.action === 'disable') {
     chrome.storage.local.set({enabled: false});
     enabled = false;
+    updateCSS(false); // Remove CSS
     blockedCount = 0; // Reset count when disabling
     stopObserver();
     blockedCount = 0;
