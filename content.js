@@ -364,17 +364,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.action === 'enable') {
     chrome.storage.local.set({enabled: true});
     enabled = true;
-    updateCSS(true); // Inject CSS
-    blockedCount = 0;
-    try { 
-      const r = scanSubtree(document); 
-      if (r) {
-        blockedCount += r;
-        incrementTotalBlocked(r);
-        updateBadge();
-      }
-    } catch(e){}
-    startObserver();
+    // Note: Blocking is not applied immediately - user must click refresh button to apply changes
     return false;
   } else if (msg.action === 'disable') {
     chrome.storage.local.set({enabled: false});
@@ -384,8 +374,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     stopObserver();
     blockedCount = 0;
     updateBadge();
-    // reload to restore original page reliably
-    try { window.location.reload(); } catch(e){}
+    // Note: Page reload removed - user must click refresh button to apply changes
     return false;
   } else if (msg.action === 'get_blocked_count') {
     try {

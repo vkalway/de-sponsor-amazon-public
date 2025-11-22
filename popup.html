@@ -125,6 +125,33 @@
       transform:translateY(1px);
     }
     
+    .close-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 20px;
+      height: 20px;
+      border: none;
+      background: transparent;
+      color: #666;
+      font-size: 18px;
+      line-height: 1;
+      cursor: pointer;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+    .close-btn:hover {
+      background: rgba(0,0,0,0.08);
+      color: #333;
+    }
+    .close-btn:active {
+      transform: scale(0.95);
+    }
+    
     /* Hide the native checkbox input */
     input[type="checkbox"] { display:none; }
   </style>
@@ -169,7 +196,12 @@
     <p class="box-text">Click the button below for changes to take effect.</p>
     <button id="refreshBtn" class="refresh-btn">Refresh</button>
   </div>
-
+<div id="rateBox" class="box" style="display:none; border-color: #f2c744; background: #fffdf5; position:relative;">
+  <button id="closeRateBtn" class="close-btn" title="Dismiss">×</button>
+  <p class="box-title">Loving the clean view?</p>
+  <p class="box-text">You have blocked <span id="rateCount">50</span> ads so far! If this saved you time, would you mind leaving a rating?</p>
+  <button id="rateBtn" class="refresh-btn" style="background: #f2c744; border-color: #dfb11f; color: #333;">⭐⭐⭐⭐⭐ Rate Us</button>
+</div>
   <script src="popup.js"></script>
 </body>
 </html>

@@ -169,13 +169,38 @@ function setTotalBlockedCount(count) {
   totalBlockedCountEl.textContent = String(Number(count) || 0);
 }
 
-// Fetch the total blocked count from storage
+// Fetch the total blocked count from storage and flag for review when over 50 ads blocked
+const EXTENSION_ID = "gdkfehnloabjkmccddnjckpnlhcdcalh"; // 
+const REVIEW_URL = `https://chromewebstore.google.com/detail/${EXTENSION_ID}/reviews`;
+
 function fetchTotalBlockedCount() {
-  chrome.storage.local.get({ totalBlocked: 0 }, (items) => {
-    setTotalBlockedCount(items.totalBlocked || 0);
+  chrome.storage.local.get({ totalBlocked: 0, hasRated: false }, (items) => {
+    const count = items.totalBlocked || 0;
+    setTotalBlockedCount(count);
+
+    // LOGIC: Show rate button if > 50 blocked AND hasn't rated yet
+    const rateBox = document.getElementById('rateBox');
+    if (count > 50 && !items.hasRated && rateBox) {
+      document.getElementById('rateCount').textContent = count;
+      rateBox.style.display = 'block';
+      
+      // Handle Rate Button Click
+      document.getElementById('rateBtn').onclick = () => {
+        chrome.tabs.create({ url: REVIEW_URL });
+        // Hide forever after clicking
+        chrome.storage.local.set({ hasRated: true });
+        rateBox.style.display = 'none';
+      };
+      
+      // Handle Close Button Click
+      document.getElementById('closeRateBtn').onclick = () => {
+        // Hide forever after dismissing
+        chrome.storage.local.set({ hasRated: true });
+        rateBox.style.display = 'none';
+      };
+    }
   });
 }
-
 // Ask the active tab's content script for the blocked count on that page
 function fetchBlockedCountFromActiveTab() {
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
