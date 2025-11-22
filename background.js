@@ -69,7 +69,24 @@ chrome.runtime.onMessage.addListener((msg, sender) => {
   
   // Forward broadcast messages
   if (msg.broadcast) {
-    chrome.tabs.query({url: "*://*.amazon.*/*"}, (tabs) => {
+    const amazonPatterns = [
+      "*://*.amazon.com/*",
+      "*://*.amazon.co.uk/*",
+      "*://*.amazon.ca/*",
+      "*://*.amazon.de/*",
+      "*://*.amazon.in/*",
+      "*://*.amazon.com.au/*",
+      "*://*.amazon.fr/*",
+      "*://*.amazon.it/*",
+      "*://*.amazon.es/*",
+      "*://*.amazon.nl/*",
+      "*://*.amazon.co.jp/*",
+      "*://*.amazon.com.mx/*",
+      "*://*.amazon.com.br/*"
+    ];
+    
+    chrome.tabs.query({url: amazonPatterns}, (tabs) => {
+      if (!tabs || !Array.isArray(tabs)) return;
       for (const t of tabs) {
         chrome.tabs.sendMessage(t.id, msg.data, ()=>{});
       }
