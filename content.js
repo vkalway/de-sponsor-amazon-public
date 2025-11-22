@@ -294,14 +294,34 @@ function updateBadge() {
 }
 
 // Increment total blocked count in storage
+// Use a debounced approach to avoid race conditions when multiple increments happen rapidly
+let pendingTotalIncrement = 0;
+let totalIncrementTimeout = null;
+
 function incrementTotalBlocked(count) {
   if (count <= 0) return;
-  try {
-    chrome.storage.local.get({ totalBlocked: 0 }, (items) => {
-      const newTotal = (items.totalBlocked || 0) + count;
-      chrome.storage.local.set({ totalBlocked: newTotal });
-    });
-  } catch(e) {}
+  
+  // Accumulate the count
+  pendingTotalIncrement += count;
+  
+  // Clear any existing timeout
+  if (totalIncrementTimeout) {
+    clearTimeout(totalIncrementTimeout);
+  }
+  
+  // Debounce the storage update to batch multiple increments
+  totalIncrementTimeout = setTimeout(() => {
+    const incrementValue = pendingTotalIncrement;
+    pendingTotalIncrement = 0;
+    totalIncrementTimeout = null;
+    
+    try {
+      chrome.storage.local.get({ totalBlocked: 0 }, (items) => {
+        const newTotal = (items.totalBlocked || 0) + incrementValue;
+        chrome.storage.local.set({ totalBlocked: newTotal });
+      });
+    } catch(e) {}
+  }, 100); // Wait 100ms to batch any rapid increments
 }
 
 // observer: only watch main results region
