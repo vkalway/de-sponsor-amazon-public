@@ -1,3 +1,13 @@
+// background.js - Open welcome page on install
+chrome.runtime.onInstalled.addListener((details) => {
+  // Check if the reason is strictly an 'install' (not an update)
+  if (details.reason === chrome.runtime.OnInstalledReason.INSTALL) {
+    chrome.tabs.create({ url: "welcome.html" });
+  } else if (details.reason === chrome.runtime.OnInstalledReason.UPDATE) {
+    // Optional: You could open a 'What's New' page here in the future
+  }
+});
+
 // background.js - keep storing default value on install
 chrome.runtime.onInstalled.addListener(() => {
   chrome.storage.local.get(['enabled'], (res) => {
