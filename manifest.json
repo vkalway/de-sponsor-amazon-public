@@ -48,25 +48,6 @@
         "*://*.amazon.com.mx/*",
         "*://*.amazon.com.br/*"
       ],
-      "css": ["hide-sponsored.css"],
-      "run_at": "document_start"
-    },
-    {
-      "matches": [
-        "*://*.amazon.com/*",
-        "*://*.amazon.co.uk/*",
-        "*://*.amazon.ca/*",
-        "*://*.amazon.de/*",
-        "*://*.amazon.in/*",
-        "*://*.amazon.com.au/*",
-        "*://*.amazon.fr/*",
-        "*://*.amazon.it/*",
-        "*://*.amazon.es/*",
-        "*://*.amazon.nl/*",
-        "*://*.amazon.co.jp/*",
-        "*://*.amazon.com.mx/*",
-        "*://*.amazon.com.br/*"
-      ],
       "js": ["content.js"],
       "run_at": "document_end"
     }

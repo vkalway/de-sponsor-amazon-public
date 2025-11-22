@@ -390,7 +390,6 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     chrome.storage.local.set({enabled: false});
     enabled = false;
     updateCSS(false); // Remove CSS
-    blockedCount = 0; // Reset count when disabling
     stopObserver();
     blockedCount = 0;
     updateBadge();
