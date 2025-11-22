@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to De-Sponsor</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            line-height: 1.6;
+            color: #333;
+            text-align: center;
+        }
+        
+        .logo {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+            color: #111;
+        }
+
+        .hero-text {
+            font-size: 20px;
+            color: #666;
+            margin-bottom: 40px;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 40px;
+            text-align: left;
+        }
+
+        .card {
+            background: #f8f9fa;
+            border: 1px solid #e1e4e8;
+            border-radius: 12px;
+            padding: 25px;
+        }
+
+        .card h3 {
+            margin-top: 0;
+            color: #1a73e8;
+        }
+
+        .pin-instruction {
+            background: #fffdf5;
+            border: 2px dashed #f2c744;
+            border-radius: 12px;
+            padding: 30px;
+            margin-top: 40px;
+        }
+
+        .button {
+            display: inline-block;
+            background: #232f3e; /* Amazon Dark Blue */
+            color: white;
+            padding: 12px 24px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            margin-top: 20px;
+        }
+        
+        .button:hover {
+            background: #131a22;
+        }
+
+        /* Pin Icon Helper */
+        .pin-icon {
+            display: inline-block;
+            vertical-align: middle;
+            width: 20px;
+            height: 20px;
+            background-color: #5f6368;
+            mask: url('data:image/svg+xml;utf8,<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M16,12V4H17V2H7V4H8V12L6,14V16H11.2V22H12.8V16H18V14L16,12Z"/></svg>') no-repeat center;
+            -webkit-mask: url('data:image/svg+xml;utf8,<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M16,12V4H17V2H7V4H8V12L6,14V16H11.2V22H12.8V16H18V14L16,12Z"/></svg>') no-repeat center;
+        }
+    </style>
+</head>
+<body>
+
+    <img src="icons/icon128.png" alt="Logo" class="logo">
+    
+    <h1>De-Sponsor for Amazon is active.</h1>
+    <p class="hero-text">Welcome back to the "Day 1" Amazon experience!</p>
+
+    <div class="card-grid">
+        <div class="card">
+            <h3>🔍 Focused on Search</h3>
+            <p><strong>De-Sponsor is not a generic ad blocker.</strong> It is specifically engineered to clean up your <em>Amazon Search Results</em>.</p>
+            <p>We remove the "Sponsored" tiles and banners that clutter your grid, so you can see just the organic search results.</p>
+        </div>
+        <div class="card">
+            <h3>🛡️ Privacy First</h3>
+            <p>We do not track your shopping, we do not collect data, and we do not inject affiliate links.</p>
+            <p>Your search history stays on your device. Period.</p>
+        </div>
+    </div>
+
+    <div class="pin-instruction">
+        <h3 style="color:#333; margin-bottom: 15px;">One last step: Pin the Extension</h3>
+        <p>To easily toggle the blocker on/off or report missed ads, pin De-Sponsor for Amazon to your browser toolbar.</p>
+        
+        <div style="margin-top: 20px; font-size: 18px;">
+            1. Click the <strong>Puzzle Piece</strong> <span style="font-size:20px">🧩</span> icon in your browser top right.<br>
+            2. Find <strong>De-Sponsor for Amazon</strong> in the list. Click the <strong>Pushpin</strong> <span class="pin-icon"></span> icon.
+        </div>
+    </div>
+
+    <img src="Pin_extension.png" alt="How to pin the extension" style="max-width: 100%; height: auto; margin-top: 30px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+
+    <a href="https://www.amazon.com/s?k=coffee+maker" target="_blank" class="button">Try it now: Search for "Coffee Maker"</a>
+
+</body>
+</html>
