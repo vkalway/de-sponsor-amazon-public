@@ -3,7 +3,7 @@
   "name": "De-Sponsor for Amazon: Hide Ads & Sponsored Results",
   "version": "1.0",
   "description": "Restores the 'Day 1' clean search experience on Amazon by hiding sponsored results. Private & Local.",
-  "permissions": ["storage", "scripting"],
+  "permissions": ["storage"],
   "host_permissions": [
     "*://*.amazon.com/*",
     "*://*.amazon.co.uk/*",
@@ -32,6 +32,25 @@
     "service_worker": "background.js"
   },
   "content_scripts": [
+    {
+      "matches": [
+        "*://*.amazon.com/*",
+        "*://*.amazon.co.uk/*",
+        "*://*.amazon.ca/*",
+        "*://*.amazon.de/*",
+        "*://*.amazon.in/*",
+        "*://*.amazon.com.au/*",
+        "*://*.amazon.fr/*",
+        "*://*.amazon.it/*",
+        "*://*.amazon.es/*",
+        "*://*.amazon.nl/*",
+        "*://*.amazon.co.jp/*",
+        "*://*.amazon.com.mx/*",
+        "*://*.amazon.com.br/*"
+      ],
+      "css": ["hide-sponsored.css"],
+      "run_at": "document_start"
+    },
     {
       "matches": [
         "*://*.amazon.com/*",
