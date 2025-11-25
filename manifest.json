@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "De-Sponsor for Amazon: Hide Ads & Sponsored Results",
-  "version": "1.0",
+  "version": "1.0.1",
   "description": "Restores the 'Day 1' clean search experience on Amazon by hiding sponsored results. Private & Local.",
   "permissions": ["storage"],
   "host_permissions": [
