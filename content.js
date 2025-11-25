@@ -10,7 +10,7 @@ let observer = null;
 let blockedCount = 0;
 let styleElement = null;
 
-// CSS rules to hide sponsored content (matches hide-sponsored.css)
+// CSS rules to hide sponsored content (mirrors the old hide-sponsored.css)
 const HIDE_SPONSORED_CSS = `
 div.s-main-slot [data-component-type="s-search-result"]:has(.s-widget-sponsored-label-text),
 div.s-main-slot [data-component-type="s-search-result"]:has(.puis-sponsored-label-text),
