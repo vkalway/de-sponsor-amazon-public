@@ -9,21 +9,21 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             max-width: 800px;
             margin: 0 auto;
-            padding: 40px 20px;
-            line-height: 1.6;
+            padding: 20px 20px;
+            line-height: 1.5;
             color: #333;
             text-align: center;
         }
         
         .logo {
-            width: 80px;
-            height: 80px;
-            margin-bottom: 20px;
+            width: 64px;
+            height: 64px;
+            margin-bottom: 10px;
         }
 
         h1 {
-            font-size: 32px;
-            margin-bottom: 10px;
+            font-size: 22px;
+            margin-bottom: 6px;
             color: #111;
         }
 
@@ -57,8 +57,28 @@
             background: #fffdf5;
             border: 2px dashed #f2c744;
             border-radius: 12px;
-            padding: 30px;
-            margin-top: 40px;
+            padding: 10px 10px;
+            margin-top: 12px;
+            text-align: left;
+        }
+
+        .pin-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-top: 12px;
+        }
+
+        .pin-row .pin-instruction {
+            flex: 1;
+            margin-top: 0;
+        }
+
+        .pin-row .pin-image {
+            flex: 1;
+            max-width: 50%;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
 
         .button {
@@ -69,7 +89,7 @@
             border-radius: 6px;
             text-decoration: none;
             font-weight: 600;
-            margin-top: 20px;
+            margin-top: 12px;
         }
         
         .button:hover {
@@ -93,32 +113,20 @@
     <img src="icons/icon128.png" alt="Logo" class="logo">
     
     <h1>De-Sponsor for Amazon is active.</h1>
-    <p class="hero-text">Welcome back to the "Day 1" Amazon experience!</p>
 
-    <div class="card-grid">
-        <div class="card">
-            <h3>🔍 Focused on Search</h3>
-            <p><strong>De-Sponsor is not a generic ad blocker.</strong> It is specifically engineered to clean up your <em>Amazon Search Results</em>.</p>
-            <p>We remove the "Sponsored" tiles and banners that clutter your grid, so you can see just the organic search results.</p>
+    <div class="pin-row">
+        <div class="pin-instruction">
+            <h3 style="color:#333; margin: 0 0 6px 0;">One last step: Pin the Extension</h3>
+            <p style="margin: 0 0 6px 0;">To easily toggle the blocker on/off, do the following:</p>
+            
+            <div style="font-size: 16px;">
+                1. Click the <strong>Puzzle Piece</strong> <span style="font-size:18px">🧩</span> icon in your browser top right.<br>
+                2. Find <strong>De-Sponsor for Amazon</strong> in the list. Click the <strong>Pushpin</strong> <span class="pin-icon"></span> icon.
+            </div>
         </div>
-        <div class="card">
-            <h3>🛡️ Privacy First</h3>
-            <p>We do not track your shopping, we do not collect data, and we do not inject affiliate links.</p>
-            <p>Your search history stays on your device. Period.</p>
-        </div>
+
+        <img src="Pin_extension.png" alt="How to pin the extension" class="pin-image">
     </div>
-
-    <div class="pin-instruction">
-        <h3 style="color:#333; margin-bottom: 15px;">One last step: Pin the Extension</h3>
-        <p>To easily toggle the blocker on/off or report missed ads, pin De-Sponsor for Amazon to your browser toolbar.</p>
-        
-        <div style="margin-top: 20px; font-size: 18px;">
-            1. Click the <strong>Puzzle Piece</strong> <span style="font-size:20px">🧩</span> icon in your browser top right.<br>
-            2. Find <strong>De-Sponsor for Amazon</strong> in the list. Click the <strong>Pushpin</strong> <span class="pin-icon"></span> icon.
-        </div>
-    </div>
-
-    <img src="Pin_extension.png" alt="How to pin the extension" style="max-width: 100%; height: auto; margin-top: 30px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
 
     <a href="https://www.amazon.com/s?k=coffee+maker" target="_blank" class="button">Try it now: Search for "Coffee Maker"</a>
 
