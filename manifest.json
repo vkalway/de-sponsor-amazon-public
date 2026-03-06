@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "De-Sponsor for Amazon: Hide Ads & Sponsored Results",
-  "version": "1.0.1",
-  "description": "Restores the 'Day 1' clean search experience on Amazon by hiding sponsored results. Private & Local.",
+  "name": "De-Sponsor for Amazon: Free, open source ad blocker for Amazon Search",
+  "version": "1.0.3",
+  "description": "Block ads on Amazon to find the best-rated products, not the ones that paid to be seen.",
   "permissions": ["storage"],
   "host_permissions": [
     "*://*.amazon.com/*",
