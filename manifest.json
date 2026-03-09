@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "De-Sponsor for Amazon: Free, open source ad blocker for Amazon Search",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Block ads on Amazon to find the best-rated products, not the ones that paid to be seen.",
   "permissions": ["storage"],
   "host_permissions": [
